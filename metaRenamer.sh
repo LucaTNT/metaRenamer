@@ -17,15 +17,16 @@ then
 	break;
 fi
 
-SOURCE=$1
-SOURCE_PATH=`dirname $SOURCE`
-/usr/bin/SublerCLI -source "$SOURCE" -listmetadata > /tmp/metaRenamer.tmp
 
-TITLE=`cat /tmp/metaRenamer.tmp | grep Name | cut -c7-`;
-SHOW=`cat /tmp/metaRenamer.tmp| grep "TV Show" | cut -c10-`;
-SEASON=`cat /tmp/metaRenamer.tmp| grep "TV Season" | cut -c12-`;
-EPISODE=`cat /tmp/metaRenamer.tmp| grep "TV Episode \#" | cut -c15-`;
-YEAR=`cat /tmp/metaRenamer.tmp| grep Date | cut -c15-18`;
+SOURCE=$1
+SOURCE_PATH=`dirname "$SOURCE"`
+SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata`
+
+TITLE=`echo "$SUBLER_OUTPUT" | grep Name | cut -c7-`;
+SHOW=`echo "$SUBLER_OUTPUT" | grep "TV Show" | cut -c10-`;
+SEASON=`echo "$SUBLER_OUTPUT" | grep "TV Season" | cut -c12-`;
+EPISODE=`echo "$SUBLER_OUTPUT" | grep "TV Episode \#" | cut -c15-`;
+YEAR=`echo "$SUBLER_OUTPUT" | grep Date | cut -c15-18`;
 
 if [ ${#EPISODE} -lt 2 ]
 then
@@ -37,8 +38,3 @@ NEW_NAME="$SHOW $SEASON""x$EPISODE $TITLE.m4v"
 mv $SOURCE "$SOURCE_PATH/$NEW_NAME"
 
 echo "File renamed to $NEW_NAME"
-
-
-
-
-rm /tmp/metaRenamer.tmp
