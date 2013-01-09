@@ -8,19 +8,27 @@ then
 	echo 'USAGE: metaRenamer [sourceFile]'
 	echo '-----------------------------------'
 	echo 'You did not provide the source file'
-	break;
+	exit 1;
 fi
 
 if [ ! -f "$1" ]
 then
 	echo "Error: can't find file $1"
-	break;
+	exit 1;
 fi
 
 
 SOURCE=$1
 SOURCE_PATH=`dirname "$SOURCE"`
-SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata`
+SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata &2> /dev/null`
+
+if [ "`echo $SUBLER_OUTPUT | grep 'be opened'`" != "`echo -n`" ]
+then
+	echo "Error: the file does not appear to be a valid mp4/m4v";
+	exit 1;
+fi
+
+
 
 TITLE=`echo "$SUBLER_OUTPUT" | grep Name | cut -c7-`;
 SHOW=`echo "$SUBLER_OUTPUT" | grep "TV Show" | cut -c10-`;
