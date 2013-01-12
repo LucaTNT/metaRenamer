@@ -52,7 +52,7 @@ function process_movie
 # Function that actually performs renaming
 function rename
 {
-	#mv "$1" "$2";
+	mv "$1" "$2";
 	return;
 }
 
