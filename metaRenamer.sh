@@ -2,6 +2,7 @@
 # metaRenamer v0.1
 # ----------------
 # Author: Luca Zorzi @LucaTNT
+# License: BSD
 #
 # This script uses SublerCLI to rename TV Shows according to the metadata embedded into the file
 # The intended use is to rename files that have been processed by iFlicks, which is quite good at
