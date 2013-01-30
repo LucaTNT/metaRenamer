@@ -57,6 +57,43 @@ function rename
 	return;
 }
 
+# Function that works with the file, checks if it is valid, and so on
+function process_file
+{
+	# Define some useful variables
+	SOURCE=$1;
+	SOURCE_PATH=`dirname "$SOURCE"`;
+	SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata &2> /dev/null`;
+
+	# Check if file is valid
+	if [[ "`echo $SUBLER_OUTPUT | grep 'be opened'`" != "`echo -n`" && $# -gt 1 ]]
+	then
+		echo "Error: the file does not appear to be a valid mp4/m4v";
+		
+		# If the second parameter is set we are working with a single file, and so we can
+		# set the exit code to 1 when an error occours. We avoid doing that while processing
+		# multiple files at once since it would stop the script.
+		if [ $# -gt 1 ]
+		then
+			exit 1;
+		fi
+	fi
+
+	# If the file is valid, get some values that are (usually) present in both movies
+	# and TV shows, including the media kind, which tells us if we're dealing with a movie
+	# or a TV show
+	TITLE=`echo "$SUBLER_OUTPUT" | grep Name | cut -c7-`;
+	YEAR=`echo "$SUBLER_OUTPUT" | grep Date | cut -c15-18`;
+	MEDIA_KIND=`echo "$SUBLER_OUTPUT" | grep Media\ Kind | cut -c13-`;
+
+	case $MEDIA_KIND in
+		9 ) process_movie;
+			;;
+		10 ) process_tvshow;
+			;;
+	esac
+}
+
 # Check if SublerCLI is available
 command -v SublerCLI >/dev/null 2>&1
 if [ $? -eq 1 ]
@@ -100,35 +137,35 @@ then
 fi
 
 
-# Check if file exists
-if [ ! -f "$1" ]
+# Check if file exists and that it is not a directory
+if [[ ! -f "$1" && ! -d "$1" ]]
 then
 	echo "Error: can't find file $1";
 	exit 1;
 fi
 
-# Define some useful variables
-SOURCE=$1;
-SOURCE_PATH=`dirname "$SOURCE"`;
-SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata &2> /dev/null`;
-
-# Check if file is valid
-if [ "`echo $SUBLER_OUTPUT | grep 'be opened'`" != "`echo -n`" ]
+# If it is a folder, we should process its contents, otherwise just pass the file to process_file()
+if [[ -d "$1" ]]
 then
-	echo "Error: the file does not appear to be a valid mp4/m4v";
-	exit 1;
+	echo "Processing folder $1";
+	files_found=0;
+	shopt -s nullglob
+	for file in "$1"/*;
+	do
+		if [[ ! -d "$file" ]] 
+		then
+	    	process_file "$file"
+	    	((files_found++));
+		fi
+	done
+	
+	if [ $files_found -lt 1 ]
+	then
+		echo "Error: no files found in this directory";
+		exit 1;
+	fi
+else
+	process_file "$1" 1
 fi
 
-# If the file is valid, get some values that are (usually) present in both movies
-# and TV shows, including the media kind, which tells us if we're dealing with a movie
-# or a TV show
-TITLE=`echo "$SUBLER_OUTPUT" | grep Name | cut -c7-`;
-YEAR=`echo "$SUBLER_OUTPUT" | grep Date | cut -c15-18`;
-MEDIA_KIND=`echo "$SUBLER_OUTPUT" | grep Media\ Kind | cut -c13-`;
 
-case $MEDIA_KIND in
-	9 ) process_movie;
-		;;
-	10 ) process_tvshow;
-		;;
-esac
