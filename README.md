@@ -7,7 +7,7 @@ The intended use is to rename files that have been processed by iFlicks, which i
 
 ## Usage
 metaRenamer.sh [file]
-It currentlysupports only one file at a time, and it will rename TV shows with this scheme:		
+It supports either one file at a time or entire directories (not yet with recursion), and it will rename TV shows with this scheme:		
 *Show* *Season*x*Episode* *Title*, for example: Fringe 1x01 Pilot		
 and Movies with this one:		
 *Title*
