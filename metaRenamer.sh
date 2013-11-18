@@ -18,24 +18,28 @@ function usage
 	echo 'USAGE: metaRenamer [-t] [-p pattern] sourceFile';
 	echo '-----------------------------------------------';
 	echo '-t             enables test mode: it only shows how metaRenamer would rename your files without actually renaming them';
+	echo '-p pattern     sets the the pattern used to rename your files';
+	echo '               Your pattern is defined replacing your placeholders with the actual data';
+	echo '               Available placeholders are:';
+	echo '               %TITLE     The title of the movie/episode';
+	echo '               %YEAR      The release year';
+	echo '               %SHOW      The show title (TV Shows only)';
+	echo '               %SEASON    The season number';
+	echo '               %SEASON0   The season number with leading zero';
+	echo '               %EPISODE   The episode number';
+	echo '               %EPISODE0  The episode number with leading zero';
 	exit 1;
 }
 
 # Function that deals with TV shows
 function process_tvshow
-{
-	SHOW=`echo "$SUBLER_OUTPUT" | grep "TV Show" | cut -c10-`;
-	SEASON=`echo "$SUBLER_OUTPUT" | grep "TV Season" | cut -c12-`;
-	EPISODE=`echo "$SUBLER_OUTPUT" | grep "TV Episode \#" | cut -c15-`;
-	
-	# Add a leading zero for single-digit episodes
-	if [ ${#EPISODE} -lt 2 ]
-	then
-		EPISODE="0$EPISODE";
-	fi 
+{	
+	# The default naming scheme
+	NEW_NAME="$SHOW $SEASON""x$EPISODE0 $TITLE.$EXTENSION";
 
+	# Parse the user's pattern (if any), otherwise keep the default one
+	parse_pattern
 
-	NEW_NAME="$SHOW $SEASON""x$EPISODE $TITLE.m4v";
 	rename "$SOURCE" "$SOURCE_PATH/$NEW_NAME";
 
 	echo -e "TV show renamed to \033[33;40;5m\033[1m$NEW_NAME\033[0m";
@@ -44,10 +48,32 @@ function process_tvshow
 # Function that deals with movies
 function process_movie
 {
-	NEW_NAME="$TITLE.m4v";
+	# The default naming scheme
+	NEW_NAME="$TITLE.$EXTENSION";
+
+	# Parse the user's pattern (if any), otherwise keep the default one
+	parse_pattern
+
 	rename "$SOURCE" "$SOURCE_PATH/$NEW_NAME";
 
 	echo -e "Movie renamed to \033[33;40;5m\033[1m$NEW_NAME\033[0m";
+}
+
+# Function that parses the user provided pattern
+function parse_pattern
+{
+	if [[ $PATTERN != '' ]]
+	then
+		echo $SOURCE
+		PATTERN=`echo "$PATTERN" | sed s/%TITLE/"$TITLE"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%YEAR/"$YEAR"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%SHOW/"$SHOW"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%SEASON0/"$SEASON0"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%SEASON/"$SEASON"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%EPISODE0/"$EPISODE0"/g`;
+		PATTERN=`echo "$PATTERN" | sed s/%EPISODE/"$EPISODE"/g`;
+		NEW_NAME="$PATTERN.$EXTENSION";
+	fi
 }
 
 # Function that actually performs renaming
@@ -67,6 +93,8 @@ function process_file
 	SOURCE=$1;
 	SOURCE_PATH=`dirname "$SOURCE"`;
 	SUBLER_OUTPUT=`/usr/bin/SublerCLI -source "$SOURCE" -listmetadata &2> /dev/null`;
+	FILENAME=$(basename "$SOURCE")
+	EXTENSION="${FILENAME##*.}"
 
 	# Check if file is valid
 	if [[ "`echo $SUBLER_OUTPUT | grep 'be opened'`" != "`echo -n`" && $# -gt 1 ]]
@@ -82,12 +110,30 @@ function process_file
 		fi
 	fi
 
-	# If the file is valid, get some values that are (usually) present in both movies
-	# and TV shows, including the media kind, which tells us if we're dealing with a movie
-	# or a TV show
+	# If the file is valid, get some values including the media kind,
+	# which tells us if we're dealing with a movie or a TV show
 	TITLE=`echo "$SUBLER_OUTPUT" | grep Name | cut -c7-`;
 	YEAR=`echo "$SUBLER_OUTPUT" | grep Date | cut -c15-18`;
 	MEDIA_KIND=`echo "$SUBLER_OUTPUT" | grep Media\ Kind | cut -c13-`;
+	SHOW=`echo "$SUBLER_OUTPUT" | grep "TV Show" | cut -c10-`;
+	SEASON=`echo "$SUBLER_OUTPUT" | grep "TV Season" | cut -c12-`;
+	EPISODE=`echo "$SUBLER_OUTPUT" | grep "TV Episode \#" | cut -c15-`;
+
+	# Add a leading zero for single-digit episodes
+	if [ ${#EPISODE} -lt 2 ]
+	then
+		EPISODE0="0$EPISODE";
+	else
+		EPISODE0=$EPISODE;
+	fi
+
+	# Add a leading zero for single-digit seasons
+	if [ ${#SEASON} -lt 2 ]
+	then
+		SEASON0="0$SEASON";
+	else
+		SEASON0=$SEASON;
+	fi
 
 	case $MEDIA_KIND in
 		9 ) process_movie;
@@ -134,7 +180,7 @@ fi
 
 # Process options
 TEST_RUN=0; # set to 1 to disable renaming, using the -t option
-PATTERN=""; # Used to set the renaming pattern (not yet implemented)
+PATTERN=""; # Used to set the renaming pattern
 
 while getopts "tp:" flag
 do
