@@ -12,7 +12,7 @@ It supports renaming of either one file at a time or of entire directories (not 
 
 If you specify the -t option, metaRenamer will not actually rename your files, it will only show how it *would* rename them.
 
-The default pattern for file names is
+The default pattern for file names is		
 *Show* *Season*x*Episode* *Title*, for example: Fringe 1x01 Pilot		
 for TV shows, and	
 *Title*		
