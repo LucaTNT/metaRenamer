@@ -15,9 +15,9 @@
 # Usage, called when used does not specify an input file
 function usage
 {
-	echo 'USAGE: metaRenamer [sourceFile]'
-	echo '-----------------------------------'
-	echo 'You did not provide the source file'
+	echo 'USAGE: metaRenamer [-t] [-p pattern] sourceFile';
+	echo '-----------------------------------------------';
+	echo '-t             enables test mode: it only shows how metaRenamer would rename your files without actually renaming them';
 	exit 1;
 }
 
@@ -53,7 +53,10 @@ function process_movie
 # Function that actually performs renaming
 function rename
 {
-	mv "$1" "$2";
+	if [[ $TEST_RUN == 0 ]]
+	then
+		mv "$1" "$2";
+	fi
 	return;
 }
 
@@ -129,6 +132,20 @@ then
 	fi
 fi
 
+# Process options
+TEST_RUN=0; # set to 1 to disable renaming, using the -t option
+PATTERN=""; # Used to set the renaming pattern (not yet implemented)
+
+while getopts "tp:" flag
+do
+	case "$flag" in
+		t) TEST_RUN=1;;
+		p) PATTERN=$OPTARG;;
+		*) usage; exit 1;;
+	esac
+done
+shift $((OPTIND-1))
+
 
 # Check if user has supplied an input file
 if [ $# -lt 1 ]
@@ -154,8 +171,8 @@ then
 	do
 		if [[ ! -d "$file" ]] 
 		then
-	    	process_file "$file"
-	    	((files_found++));
+			process_file "$file"
+			((files_found++));
 		fi
 	done
 	
