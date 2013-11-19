@@ -40,6 +40,7 @@ function process_tvshow
 	# Parse the user's pattern (if any), otherwise keep the default one
 	parse_pattern
 
+	# Default TV Show renaming scheme
 	rename "$SOURCE" "$SOURCE_PATH/$NEW_NAME";
 
 	echo -e "TV show renamed to \033[33;40;5m\033[1m$NEW_NAME\033[0m";
@@ -54,6 +55,7 @@ function process_movie
 	# Parse the user's pattern (if any), otherwise keep the default one
 	parse_pattern
 
+	# Default movie renaming scheme
 	rename "$SOURCE" "$SOURCE_PATH/$NEW_NAME";
 
 	echo -e "Movie renamed to \033[33;40;5m\033[1m$NEW_NAME\033[0m";
@@ -64,7 +66,6 @@ function parse_pattern
 {
 	if [[ $PATTERN != '' ]]
 	then
-		echo $SOURCE
 		NEW_NAME=$PATTERN;
 		NEW_NAME=`echo "$NEW_NAME" | sed s/%TITLE/"$TITLE"/g`;
 		NEW_NAME=`echo "$NEW_NAME" | sed s/%YEAR/"$YEAR"/g`;
