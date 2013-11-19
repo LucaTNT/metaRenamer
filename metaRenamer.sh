@@ -65,14 +65,15 @@ function parse_pattern
 	if [[ $PATTERN != '' ]]
 	then
 		echo $SOURCE
-		PATTERN=`echo "$PATTERN" | sed s/%TITLE/"$TITLE"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%YEAR/"$YEAR"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%SHOW/"$SHOW"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%SEASON0/"$SEASON0"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%SEASON/"$SEASON"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%EPISODE0/"$EPISODE0"/g`;
-		PATTERN=`echo "$PATTERN" | sed s/%EPISODE/"$EPISODE"/g`;
-		NEW_NAME="$PATTERN.$EXTENSION";
+		NEW_NAME=$PATTERN;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%TITLE/"$TITLE"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%YEAR/"$YEAR"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%SHOW/"$SHOW"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%SEASON0/"$SEASON0"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%SEASON/"$SEASON"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%EPISODE0/"$EPISODE0"/g`;
+		NEW_NAME=`echo "$NEW_NAME" | sed s/%EPISODE/"$EPISODE"/g`;
+		NEW_NAME="$NEW_NAME.$EXTENSION";
 	fi
 }
 
