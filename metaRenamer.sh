@@ -33,7 +33,7 @@ function usage
 
 # Function that deals with TV shows
 function process_tvshow
-{	
+{
 	# The default naming scheme
 	NEW_NAME="$SHOW $SEASON""x$EPISODE0 $TITLE.$EXTENSION";
 
@@ -102,7 +102,7 @@ function process_file
 	if [[ "`echo $SUBLER_OUTPUT | grep 'be opened'`" != "`echo -n`" && $# -gt 1 ]]
 	then
 		echo "Error: the file does not appear to be a valid mp4/m4v";
-		
+
 		# If the second parameter is set we are working with a single file, and so we can
 		# set the exit code to 1 when an error occours. We avoid doing that while processing
 		# multiple files at once since it would stop the script.
@@ -156,7 +156,7 @@ then
 	then
 		echo;
 		echo "Starting download...";
-		URL=`curl -s http://lucazorzi.net/stuff/SublerCLI-URL.txt`;
+		URL=`curl -s https://lucazorzi.net/stuff/SublerCLI-URL.txt`;
 		curl -# -o /tmp/sublercli.zip $URL;
 		echo "Download completed";
 		echo -n "Extracting... "
@@ -217,13 +217,13 @@ then
 	shopt -s nullglob
 	for file in "$1"/*;
 	do
-		if [[ ! -d "$file" ]] 
+		if [[ ! -d "$file" ]]
 		then
 			process_file "$file"
 			((files_found++));
 		fi
 	done
-	
+
 	if [ $files_found -lt 1 ]
 	then
 		echo "Error: no files found in this directory";
